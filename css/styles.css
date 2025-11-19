@@ -1,0 +1,116 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #ffffff; /* Light theme */
+    color: #000000;
+}
+
+/* A static background layer that stays fixed while inner content scrolls */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -100; /* behind the app */
+    pointer-events: none;
+    background-image: radial-gradient(circle at 10% 10%, rgba(81,190,120,0.06), transparent 12%), radial-gradient(circle at 90% 90%, rgba(255,122,0,0.03), transparent 10%);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+}
+
+/* When we need to hide the static background (e.g., chat view) */
+body.hide-static-bg::before {
+    display: none !important;
+}
+
+:root {
+    --app-green: #51be78;
+    --app-orange: #ff7a00;
+    --app-white: #ffffff;
+    --app-black: #000000;
+}
+
+/* Compatibility helper classes (legacy names used in markup/JS) */
+.bg-supabase-light { background-color: #f8fafc; }
+.bg-supabase-dark { background-color: #f1f5f9; }
+.bg-supabase-green { background-color: var(--app-green); }
+.text-supabase-green { color: var(--app-green); }
+.text-supabase-text { color: #111827; }
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: #f3f4f6; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+/* Mobile viewport fix */
+#app-wrapper { height: 100dvh; max-width: 768px; margin: 0 auto; }
+.app-wrapper-above-bg { position: relative; z-index: 1; }
+.message-mine { background-color: #51be78; color: #000000; align-self: flex-end; border-bottom-right-radius: 8px; }
+.message-other { background-color: #f8fafc; color: #000000; align-self: flex-start; border: 1px solid #e6e6e6; border-bottom-left-radius: 8px; }
+
+/* Small utilities used by the app */
+.message-text-container textarea { min-height: 72px; }
+.message-bubble { word-break: break-word; }
+
+/* Message overflow menu (three-dot) */
+.message-options-button {
+    background: transparent;
+    border: none;
+    color: rgba(0,0,0,0.7);
+    font-size: 18px;
+    line-height: 1;
+}
+.message-options-button:hover { color: rgba(0,0,0,0.9); }
+
+.message-menu { min-width: 7rem; }
+.message-menu.hidden { display: none; }
+.message-menu-item { background: transparent; border: none; color: inherit; cursor: pointer; }
+.message-menu-item:focus { outline: none; background: #f1f5f9; }
+
+/* Visually hide but keep accessible text */
+.sr-only { position: absolute !important; height: 1px; width: 1px; overflow: hidden; clip: rect(1px, 1px, 1px, 1px); white-space: nowrap; }
+
+/* Bottom navigation (mobile) */
+#bottom-nav { box-shadow: 0 -1px 8px rgba(0,0,0,0.06); background: #ffffff; }
+#bottom-nav button { background: transparent; border: none; }
+
+/* Profile modal tweaks */
+#profile-modal input, #profile-complete-modal input { color: inherit; }
+
+/* Admin badge for groups */
+.group-admin-badge { display: inline-block; margin-left: 8px; background:#51be78; color: #ffffff; font-size: 11px; padding: 2px 6px; border-radius: 9999px; }
+
+/* Edited tag */
+.message-edited { font-size: 11px; color: #6b7280; margin-left: 6px; }
+
+/* Header/logo tweaks */
+.app-logo { height: 32px; width: 32px; object-fit: contain; }
+
+/* Mobile improvements */
+@media (max-width: 640px) {
+    .message-bubble { max-width: 85%; }
+    #room-name { font-size: 16px; }
+    #bottom-nav { padding: 8px 12px; }
+}
+
+/* Dark mode overrides */
+body.dark-mode {
+    background-color: #0f172a;
+    color: #f1f5f9;
+}
+body.dark-mode .bg-supabase-light { background-color: #0f172a; }
+body.dark-mode .bg-supabase-dark { background-color: #0b1220; }
+body.dark-mode .text-supabase-green { color: var(--app-green); }
+body.dark-mode .message-mine { background-color: #059669; color: #ffffff; }
+body.dark-mode .message-other { background-color: #1e293b; color: #f1f5f9; border-color: #334155; }
+body.dark-mode #bottom-nav { background: #0b1220; box-shadow: 0 -1px 8px rgba(2,6,23,0.6); }
+body.dark-mode .message-options-button { color: rgba(241,245,249,0.85); }
+body.dark-mode .message-menu { background: #0f172a; border-color: #334155; }
+body.dark-mode .message-menu-item:focus { background: #0b1220; }
+
+/* Fullscreen file viewer styles */
+#file-viewer { backdrop-filter: blur(4px); }
+#file-viewer .max-w-5xl { max-width: 1100px; }
+#file-viewer-content img, #file-viewer-content video, #file-viewer-content iframe, #file-viewer-content object { max-width: 100%; max-height: calc(100vh - 120px); border-radius: 8px; }
+#file-viewer-content { background: transparent; }
+#file-viewer-toolbar button { cursor: pointer; }
+#file-viewer .hidden { display: none; }
