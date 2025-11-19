@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer Science Study Groups</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                            colors: {
+                                'app-green': '#51be78',
+                                'app-orange': '#ff7a00',
+                                'app-white': '#ffffff',
+                                'app-black': '#000000',
+                            }
+                        }
+            }
+        }
+    </script>
+    <!-- Use Inter font and custom styles -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <!-- Main Application Wrapper -->
+    <div id="app-wrapper" class="flex flex-col shadow-2xl app-wrapper-above-bg">
+
+        <!-- Header -->
+        <header id="app-header" class="p-4 bg-supabase-light border-b border-gray-200 shadow-sm sticky top-0 z-10 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <img src="https://icp.edu.ng/images/logo.png" alt="Logo" class="h-8 w-8 object-contain" />
+                <h1 class="text-1xl font-bold text-app-green">Computer Science Study Groups</h1>
+            </div>
+            <div class="flex items-center space-x-3">
+                <p id="user-display-email" class="text-sm font-medium text-gray-400 truncate max-w-[120px]"></p>
+            </div>
+        </header>
+        
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="fixed inset-0 flex items-center justify-center bg-supabase-dark z-50">
+            <div class="flex flex-col items-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-supabase-green"></div>
+                <p class="mt-4 text-supabase-green">Connecting...</p>
+            </div>
+        </div>
+
+        <!-- AUTH VIEW -->
+        <div id="auth-view" class="flex-1 flex items-center justify-center p-4 hidden">
+            <div class="bg-supabase-light p-8 rounded-xl shadow-sm w-full max-w-md border border-gray-200">
+                <div class="flex flex-col items-center">
+                    <img src="https://icp.edu.ng/images/logo.png" alt="Logo" class="h-16 w-16 object-contain mb-4" />
+                    <h2 class="text-3xl font-extrabold text-app-green mb-6 text-center">Computer Science Study Groups</h2>
+                </div>
+                <div id="auth-message" class="p-3 mb-4 rounded-lg text-sm hidden"></div>
+                
+                <form id="auth-form" class="space-y-4">
+                    <input type="email" id="auth-email" placeholder="Email" required
+                        class="w-full p-3 rounded-lg bg-supabase-dark border border-gray-200 text-supabase-text focus:ring-2 focus:ring-app-green focus:border-app-green transition duration-150" />
+                    <input type="password" id="auth-password" placeholder="Password" required
+                        class="w-full p-3 rounded-lg bg-supabase-dark border border-gray-200 text-supabase-text focus:ring-2 focus:ring-app-green focus:border-app-green transition duration-150" />
+                    
+                    <button type="submit" id="auth-submit-button"
+                        class="w-full bg-supabase-green hover:bg-emerald-600 text-white font-semibold py-3 rounded-lg shadow-lg transition duration-200">
+                        Sign In
+                    </button>
+                </form>
+
+                <p class="text-center text-sm text-gray-400 mt-4">
+                    Don't have an account? 
+                    <button id="toggle-auth-mode" class="text-supabase-green hover:underline font-medium">Sign Up</button>
+                </p>
+            </div>
+        </div>
+
+        <!-- GROUP LIST VIEW -->
+        <div id="groups-view" class="flex-1 p-4 flex flex-col hidden">
+            <h2 class="text-xl font-bold text-black mb-4 border-b border-gray-200 pb-2">Available Study Groups</h2>
+            
+            <div class="mb-4 flex space-x-2">
+                <input type="text" id="group-search" placeholder="Search groups by name..." 
+                    class="flex-1 p-2 rounded-lg bg-supabase-light border border-gray-200 text-black focus:ring-2 focus:ring-app-green focus:border-app-green transition duration-150" />
+                <button id="create-group-btn" class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                </button>
+            </div>
+
+            <div id="groups-list" class="flex-1 overflow-y-auto custom-scrollbar space-y-3">
+                <!-- Group cards will be rendered here -->
+            </div>
+        </div>
+
+        <!-- CREATE GROUP MODAL -->
+        <div id="create-group-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-40 hidden">
+            <div class="bg-supabase-light p-6 rounded-xl shadow-sm w-11/12 max-w-sm border border-gray-200">
+                <h2 class="text-xl font-bold text-supabase-green mb-4">Create New Group</h2>
+                <form id="group-creation-form" class="space-y-4">
+                    <input type="hidden" id="group-id-input" />
+                    <input type="text" id="group-name-input" placeholder="Group Name (e.g., Algorithms 101)" required maxlength="50"
+                        class="w-full p-3 rounded-lg bg-supabase-dark border border-gray-200 text-supabase-text" />
+                    <textarea id="group-desc-input" placeholder="Group Description (e.g., Focus on DP and Graphs)" required maxlength="150" rows="3"
+                        class="w-full p-3 rounded-lg bg-supabase-dark border border-gray-200 text-supabase-text"></textarea>
+                    <button type="submit" class="w-full bg-supabase-green hover:bg-emerald-600 text-white font-semibold py-3 rounded-lg shadow-md transition duration-200">
+                        Create
+                    </button>
+                    <button type="button" id="close-group-modal" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 rounded-lg shadow-md transition duration-200">
+                        Cancel
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- CHAT ROOM VIEW -->
+        <div id="chat-view" class="flex-1 flex flex-col hidden">
+            <!-- Chat Header (fixed) -->
+            <div id="chat-topbar" class="fixed top-0 left-0 right-0 z-30 p-3 bg-supabase-light border-b border-gray-200 flex items-center justify-between">
+                <button id="back-to-groups" class="text-gray-400 hover:text-supabase-green mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                </button>
+                <div class="flex-1">
+                    <h3 id="room-name" class="font-bold text-supabase-green truncate"></h3>
+                    <p id="room-description" class="text-xs text-gray-400 truncate"></p>
+                    <!-- Admin badge placeholder for this group chat -->
+                    <div id="room-admin-area" class="mt-1"></div>
+                </div>
+                <!-- Admin controls (edit/delete) if current user is group admin -->
+                <div id="chat-admin-controls" class="ml-3"></div>
+            </div>
+
+            <!-- spacer for fixed chat header -->
+            <div class="h-16"></div>
+
+            <!-- Messages Area -->
+            <div id="chat-messages-container" class="flex-1 overflow-y-auto custom-scrollbar p-4 flex flex-col space-y-2">
+                <p class="text-center text-sm text-gray-500 my-4">Chat history loading...</p>
+            </div>
+
+            <!-- Message Input Form -->
+            <div class="p-4 bg-supabase-light border-t border-gray-200 sticky bottom-0 z-10" style="padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem)">
+                <div id="file-upload-progress" class="hidden h-2 mb-2 bg-gray-700 rounded-full">
+                    <div id="progress-bar" class="h-2 bg-supabase-green rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+
+                <form id="chat-form" class="flex space-x-2 items-center">
+                    <!-- File Upload Button -->
+                    <button type="button" id="file-upload-button" 
+                        class="bg-gray-700 hover:bg-gray-600 text-white p-3 rounded-lg shadow-md transition duration-200 disabled:opacity-50"
+                        title="Attach File"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                        </svg>
+                    </button>
+                    <!-- Hidden File Input -->
+                    <input type="file" id="file-input" class="hidden" />
+
+                    <input type="text" id="chat-input" placeholder="Type a message or share an idea..." required autocomplete="off"
+                        class="flex-1 p-3 rounded-lg bg-supabase-dark border border-gray-200 text-supabase-text focus:ring-2 focus:ring-app-green focus:border-app-green transition duration-150 disabled:bg-gray-200"
+                    />
+                    <button type="submit" id="send-button"
+                        class="bg-supabase-green hover:bg-emerald-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition duration-200 disabled:opacity-50"
+                    >
+                        Send
+                    </button>
+                </form>
+
+                <!-- File Preview Area -->
+                <div id="file-preview-container" class="mt-2 text-xs text-gray-400 flex items-center hidden">
+                    <span class="mr-2 text-supabase-green">Attached:</span>
+                    <span id="file-name-display" class="p-1 px-2 bg-supabase-dark border border-gray-200 rounded-md truncate max-w-xs"></span>
+                    <button type="button" id="clear-file-button" class="ml-2 text-red-400 hover:text-red-500 font-bold text-lg">
+                        &times;
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Page View (full page) -->
+        <div id="profile-view" class="flex-1 p-4 hidden">
+            <div class="bg-supabase-light p-6 rounded-xl shadow-sm w-full max-w-xl mx-auto border border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-supabase-green">Your Profile</h2>
+                    <button id="profile-back" class="text-gray-300 hover:text-white">Back</button>
+                </div>
+                <form id="profile-form" class="space-y-3">
+                    <input id="profile-fullname" placeholder="Full name" class="w-full p-3 rounded bg-supabase-dark border border-gray-200 text-black" />
+                    <input id="profile-matric" placeholder="Matric No" class="w-full p-3 rounded bg-supabase-dark border border-gray-200 text-black" />
+                    <input id="profile-phone" placeholder="Phone number" class="w-full p-3 rounded bg-supabase-dark border border-gray-200 text-black" />
+                    <input id="profile-email" placeholder="Email" disabled class="w-full p-3 rounded bg-gray-200 border border-gray-200 text-black" />
+                    <div class="flex space-x-2">
+                        <button id="save-profile" class="flex-1 bg-supabase-green text-white py-3 rounded">Save</button>
+                        <button id="close-profile" type="button" class="flex-1 bg-gray-600 text-white py-3 rounded">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Profile Completion Page (shown after signup if profile incomplete) -->
+        <div id="profile-complete-view" class="flex-1 p-4 hidden">
+            <div class="bg-supabase-light p-6 rounded-xl w-full max-w-xl mx-auto border border-gray-200">
+                <h2 class="text-2xl font-bold text-supabase-green mb-2">Complete your profile</h2>
+                <p class="text-sm text-gray-400 mb-4">Please provide your Matric No, full name, and phone number to complete your profile.</p>
+                <form id="profile-complete-form" class="space-y-3">
+                    <input id="complete-fullname" placeholder="Full name" required class="w-full p-3 rounded bg-supabase-dark border border-gray-200 text-supabase-text" />
+                    <input id="complete-matric" placeholder="Matric No" required class="w-full p-3 rounded bg-supabase-dark border border-gray-200 text-supabase-text" />
+                    <input id="complete-phone" placeholder="Phone number" required class="w-full p-3 rounded bg-supabase-dark border border-gray-200 text-supabase-text" />
+                    <div class="flex space-x-2">
+                        <button type="submit" class="flex-1 bg-supabase-green text-white py-3 rounded">Save Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Settings Page View -->
+        <div id="settings-view" class="flex-1 p-4 hidden">
+            <div class="bg-supabase-light p-6 rounded-xl w-full max-w-xl mx-auto border border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-supabase-green">Settings</h2>
+                    <button id="settings-back" class="text-gray-300 hover:text-white">Back</button>
+                </div>
+                <form id="settings-form" class="space-y-4">
+                    <label class="flex items-center space-x-2"><input type="checkbox" id="setting-dark-mode" /> <span class="text-sm text-gray-700">Enable dark mode</span></label>
+                    <div class="flex space-x-2">
+                        <button id="settings-signout" type="button" class="flex-1 bg-red-600 text-white py-3 rounded">Sign out</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bottom Navigation (mobile-style) -->
+    <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-supabase-light border-t border-gray-200 z-40">
+        <div class="max-w-3xl mx-auto flex justify-between items-center px-6 py-2">
+            <button id="nav-groups" class="flex flex-col items-center text-xs text-gray-300 hover:text-supabase-green">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18"/></svg>
+                Groups
+            </button>
+            <button id="nav-settings" class="flex flex-col items-center text-xs text-gray-300 hover:text-supabase-green">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-2.21 0-4 .895-4 2s1.79 2 4 2 4-.895 4-2-1.79-2-4-2zm0 8c-2.21 0-4 .895-4 2s1.79 2 4 2 4-.895 4-2-1.79-2-4-2z"/></svg>
+                Settings
+            </button>
+            <button id="nav-profile" class="flex flex-col items-center text-xs text-gray-300 hover:text-supabase-green">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A9 9 0 1118.88 6.196 9 9 0 015.12 17.804z"/></svg>
+                Profile
+            </button>
+        </div>
+    </nav>
+    <!-- Profile Page View (full page) and Settings moved inside main wrapper so they render like pages -->
+
+
+    <!-- Profile Details Page (full page view) -->
+    <div id="profile-details-view" class="flex-1 p-4 hidden">
+        <div class="bg-supabase-light p-6 rounded-xl w-full max-w-xl mx-auto border border-gray-200">
+            <div class="flex items-center justify-between mb-4">
+                <h3 id="details-name" class="text-lg font-bold text-app-green mb-3">User</h3>
+                <button id="close-details" class="text-gray-600 hover:text-black">Back</button>
+            </div>
+            <p id="details-matric" class="text-sm text-gray-600">Matric: —</p>
+            <p id="details-phone" class="text-sm text-gray-600">Phone: —</p>
+            <p id="details-email" class="text-sm text-gray-600">Email: —</p>
+        </div>
+    </div>
+
+    <!-- Supabase Client Script -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Optional local config: create `supabase-config.js` next to this file to provide real values without editing index.html -->
+    <script src="./supabase-config.js"></script>
+    
+    <script type="module" src="./js/app.js"></script>
+
+    <!-- Fullscreen File Viewer (hidden by default) -->
+    <div id="file-viewer" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80">
+        <div class="relative w-full h-full max-w-5xl max-h-full p-4">
+            <div id="file-viewer-toolbar" class="absolute left-0 right-0 top-0 flex items-center justify-between p-3 bg-transparent text-white">
+                <div id="file-viewer-title" class="truncate text-sm font-semibold"></div>
+                <div class="flex items-center space-x-2">
+                    <button id="file-viewer-download" class="bg-white text-black px-3 py-1 rounded text-sm">Download</button>
+                    <button id="file-viewer-close" class="bg-transparent text-white px-3 py-1 rounded text-sm">Close</button>
+                </div>
+            </div>
+
+            <div id="file-viewer-content" class="absolute inset-0 mt-12 p-4 overflow-auto flex items-center justify-center">
+                <!-- Rendered preview will be placed here (img, iframe, video, etc.) -->
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
